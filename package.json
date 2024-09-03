@@ -8,6 +8,6 @@
     
   },
   "scripts": {
-  "start": "node server.js"  // Replace 'server.js' with the entry point of your application
+  "start": "node server.js" 
 }
 }
