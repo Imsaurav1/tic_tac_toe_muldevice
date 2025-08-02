@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic-Tac-Toe</title>
     <link href="https://fonts.googleapis.com/css2?family=Tilt+Warp&display=swap" rel="stylesheet">
-    <img src="public1/cristina-gottardi-CSpjU6hYo_0-unsplash.jpg" style="width: 200px;">
+  
 </head>
 
 <style>
@@ -164,6 +164,8 @@
           <button id="muteBtn" onclick="toggleMute()" style="padding: 5px 10px;">🔊 Mute</button>
     </div>
 
+    <button id="homeBtn" class="control-button">Home</button>
+
 
 
     <!-- Audio elements for sound effects -->
@@ -271,6 +273,11 @@
             }
         });
     });
+
+    document.getElementById("homeBtn").addEventListener("click", () => {
+          window.location.href = "https://saurabhjha.site";
+    });
+
 
     socket.on("playing", (e) => {
         const { board, currentTurn } = e;
