@@ -228,30 +228,41 @@
     });
 
     function checkWinOrDraw(board) {
-        const winSound = document.getElementById("winSound");
-        const drawSound = document.getElementById("drawSound");
-        const message = document.getElementById("message");
+    const winSound = document.getElementById("winSound");
+    const drawSound = document.getElementById("drawSound");
+    const message = document.getElementById("message");
+    const value = document.getElementById("value").innerText; // 'X' or 'O'
 
-        const lines = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
-            [0, 3, 6], [1, 4, 7], [2, 5, 8], // cols
-            [0, 4, 8], [2, 4, 6]             // diagonals
-        ];
+    const lines = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+    ];
 
-        for (let [a, b, c] of lines) {
-            if (board[a] && board[a] === board[b] && board[b] === board[c]) {
-                winSound.play();
-                message.innerText = `${board[a]} is the Winner!`;
-                disableBoard();
-                return;
+    for (let [a, b, c] of lines) {
+        if (board[a] && board[a] === board[b] && board[b] === board[c]) {
+            winSound.play();
+            message.innerText = `${board[a]} is the Winner!`;
+            disableBoard();
+
+            // Show outcome to player
+            if (board[a] === value) {
+                document.getElementById("valueCont").innerHTML = `<span style="color: green;">🎉 You are the Winner!</span>`;
+            } else {
+                document.getElementById("valueCont").innerHTML = `<span style="color: red;">❌ You lost the game</span>`;
             }
-        }
 
-        if (board.every(cell => cell !== null)) {
-            drawSound.play();
-            message.innerText = `It's a Draw!`;
+            return;
         }
     }
+
+    if (board.every(cell => cell !== null)) {
+        drawSound.play();
+        message.innerText = `It's a Draw!`;
+        document.getElementById("valueCont").innerHTML = `<span style="color: orange;">🤝 It's a Draw!</span>`;
+    }
+}
+
 
     function disableBoard() {
         document.querySelectorAll(".btn").forEach(btn => btn.disabled = true);
