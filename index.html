@@ -62,6 +62,12 @@
         background-color: rgb(206, 203, 203);
         border-radius: 10px;
     }
+    .container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 2rem;
+    }
 
     #find {
         font-size: 1.5rem;
@@ -75,6 +81,7 @@
 
     .btn:hover {
         background-color: rgb(226, 228, 230);
+            
     }
 
     button.enabled {
@@ -85,11 +92,31 @@
         font-size: 4rem;
     }
 
-    #message {
-        font-size: 2rem;
-        margin-top: 20px;
-        color: red;
+    @media (max-width: 600px) {
+    h1 {
+        font-size: 1.5rem;
     }
+
+    .container {
+        width: 90%;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .btn {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+    }
+
+    #restartBtn, #muteBtn {
+        font-size: 0.9rem;
+    }
+
+    #message {
+        font-size: 1.2rem;
+    }
+}
+
 
 </style>
 
@@ -126,7 +153,17 @@
         </div>
     </div>
 
-    <div id="message"></div>
+    <div id="message"></div> 
+
+    <div style="margin-top: 20px;">
+              <button id="restartBtn" onclick="restartGame()" style="padding: 10px 20px; font-size: 1rem;">🔁 Rematch</button>
+     </div>
+
+    <div style="margin-top: 10px;">
+          <button id="muteBtn" onclick="toggleMute()" style="padding: 5px 10px;">🔊 Mute</button>
+    </div>
+
+
 
     <!-- Audio elements for sound effects -->
     <audio id="winSound">
@@ -138,6 +175,10 @@
     <audio id="clickSound">
         <source src="bubble-pop-6395.mp3" type="audio/mp3">
     </audio>
+    <audio id="bgMusic" loop autoplay>
+        <source src="background-music.mp3" type="audio/mp3">
+    </audio>
+
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/socket.io/socket.io.js"></script>
@@ -153,6 +194,8 @@
 
     let name = "";
     let roomId = "";
+    let isMuted = false;
+    
 
     document.getElementById('find').addEventListener("click", function () {
         name = document.getElementById("name").value;
@@ -166,6 +209,23 @@
             document.getElementById("find").disabled = true;
         }
     });
+
+
+
+
+    function toggleMute() {
+        const audios = document.querySelectorAll("audio");
+        audios.forEach(audio => audio.muted = !isMuted);
+        isMuted = !isMuted;
+        document.getElementById("muteBtn").innerText = isMuted ? "🔇 Unmute" : "🔊 Mute";
+    }
+
+
+
+    function restartGame() {
+        location.reload(); // Quick restart: refreshes the page
+    }
+
 
     socket.on("find", (e) => {
         const { players, currentTurn } = e;
@@ -274,19 +334,6 @@
 </script>
 
 
-
-    <!-- Audio elements for sound effects -->
-<audio id="winSound">
-    <source src="congratulations-deep-voice-172193.mp3" type="audio/mp3">
-</audio>
-
-<audio id="drawSound">
-    <source src="draw-sword1-44724.mp3" type="audio/mp3">
-</audio>
-
-<audio id="clickSound">
-    <source src="bubble-pop-6395.mp3" type="audio/mp3">
-</audio>
 
 
 
