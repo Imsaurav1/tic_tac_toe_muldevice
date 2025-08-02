@@ -140,123 +140,129 @@
     </audio>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script>
+    <script src="/socket.io/socket.io.js"></script>
+<script>
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("bigcont").style.display = "none";
+    document.getElementById("userCont").style.display = "none";
+    document.getElementById("oppNameCont").style.display = "none";
+    document.getElementById("valueCont").style.display = "none";
+    document.getElementById("whosTurn").style.display = "none";
+
+    const socket = io();
+
+    let name = "";
+    let roomId = "";
+
+    document.getElementById('find').addEventListener("click", function () {
+        name = document.getElementById("name").value;
+        document.getElementById("user").innerText = name;
+
+        if (!name.trim()) {
+            alert("Please enter a name");
+        } else {
+            socket.emit("find", { name: name });
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("find").disabled = true;
+        }
+    });
+
+    socket.on("find", (e) => {
+        const { players, currentTurn } = e;
+        roomId = e.roomId;
+
+        let value, oppName;
+        if (players.X.name === name) {
+            value = "X";
+            oppName = players.O.name;
+        } else {
+            value = "O";
+            oppName = players.X.name;
+        }
+
+        document.getElementById("value").innerText = value;
+        document.getElementById("oppName").innerText = oppName;
+
+        document.getElementById("userCont").style.display = "block";
+        document.getElementById("oppNameCont").style.display = "block";
+        document.getElementById("valueCont").style.display = "block";
         document.getElementById("loading").style.display = "none";
-        document.getElementById("bigcont").style.display = "none";
-        document.getElementById("userCont").style.display = "none";
-        document.getElementById("oppNameCont").style.display = "none";
-        document.getElementById("valueCont").style.display = "none";
-        document.getElementById("whosTurn").style.display = "none";
+        document.getElementById("name").style.display = "none";
+        document.getElementById("find").style.display = "none";
+        document.getElementById("enterName").style.display = "none";
+        document.getElementById("bigcont").style.display = "block";
+        document.getElementById("whosTurn").style.display = "block";
+        document.getElementById("whosTurn").innerText = `${currentTurn}'s Turn`;
+    });
 
-        const socket = io();
+    document.querySelectorAll(".btn").forEach((btn, idx) => {
+        btn.addEventListener("click", function () {
+            const value = document.getElementById("value").innerText;
 
-        let name;
-
-        document.getElementById('find').addEventListener("click", function () {
-            name = document.getElementById("name").value;
-            document.getElementById("user").innerText = name;
-            if (name == null || name == '') {
-                alert("Please enter a name");
-            } else {
-                socket.emit("find", { name: name });
-
-                document.getElementById("loading").style.display = "block";
-                document.getElementById("find").disabled = true;
-            }
-        });
-
-        socket.on("find", (e) => {
-            let allPlayersArray = e.allPlayers;
-            console.log("html", allPlayersArray);
-
-            if (name != '') {
-                document.getElementById("userCont").style.display = "block";
-                document.getElementById("oppNameCont").style.display = "block";
-                document.getElementById("valueCont").style.display = "block";
-                document.getElementById("loading").style.display = "none";
-                document.getElementById("name").style.display = "none";
-                document.getElementById("find").style.display = "none";
-                document.getElementById("enterName").style.display = "none";
-                document.getElementById("bigcont").style.display = "block";
-                document.getElementById("whosTurn").style.display = "block";
-                document.getElementById("whosTurn").innerText = "X's Turn";
-            }
-
-            let oppName, value;
-
-            const foundObject = allPlayersArray.find(obj => obj.p1.p1name == `${name}` || obj.p2.p2name == `${name}`);
-            foundObject.p1.p1name == `${name}` ? oppName = foundObject.p2.p2name : oppName = foundObject.p1.p1name;
-            foundObject.p1.p1name == `${name}` ? value = foundObject.p1.p1value : value = foundObject.p2.p2value;
-
-            document.getElementById("oppName").innerText = oppName;
-            document.getElementById("value").innerText = value;
-        });
-
-        document.querySelectorAll(".btn").forEach(e => {
-            e.addEventListener("click", function () {
-                let value = document.getElementById("value").innerText;
-                e.innerText = value;
-
-                // Play click sound
+            if (btn.innerText === "") {
                 document.getElementById("clickSound").play();
+                socket.emit("playing", {
+                    roomId,
+                    index: idx,
+                    value,
+                    name
+                });
+            }
+        });
+    });
 
-                socket.emit("playing", { value: value, id: e.id, name: name });
-            });
+    socket.on("playing", (e) => {
+        const { board, currentTurn } = e;
+        document.getElementById("whosTurn").innerText = `${currentTurn}'s Turn`;
+
+        board.forEach((val, idx) => {
+            const btn = document.getElementById(`btn${idx + 1}`);
+            if (val && btn.innerText === "") {
+                btn.innerText = val;
+                btn.disabled = true;
+                btn.style.color = "black";
+            }
         });
 
-        socket.on("playing", (e) => {
-            const foundObject = (e.allPlayers).find(obj => obj.p1.p1name == `${name}` || obj.p2.p2name == `${name}`);
-            let p1id = foundObject.p1.p1move;
-            let p2id = foundObject.p2.p2move;
+        checkWinOrDraw(board);
+    });
 
-            if ((foundObject.sum) % 2 == 0) {
-                document.getElementById("whosTurn").innerText = "O's Turn";
-            } else {
-                document.getElementById("whosTurn").innerText = "X's Turn";
-            }
+    function checkWinOrDraw(board) {
+        const winSound = document.getElementById("winSound");
+        const drawSound = document.getElementById("drawSound");
+        const message = document.getElementById("message");
 
-            if (p1id != '') {
-                document.getElementById(`${p1id}`).innerText = "X";
-                document.getElementById(`${p1id}`).disabled = true;
-                document.getElementById(`${p1id}`).style.color = "black";
-            }
-            if (p2id != '') {
-                document.getElementById(`${p2id}`).innerText = "O";
-                document.getElementById(`${p2id}`).disabled = true;
-                document.getElementById(`${p2id}`).style.color = "black";
-            }
+        const lines = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // cols
+            [0, 4, 8], [2, 4, 6]             // diagonals
+        ];
 
-            check(name, foundObject.sum);
-        });
-
-        function check(name, sum) {
-            const winSound = document.getElementById("winSound");
-            const drawSound = document.getElementById("drawSound");
-            const message = document.getElementById("message");
-
-            let b1 = document.getElementById("btn1").innerText || "a";
-            let b2 = document.getElementById("btn2").innerText || "b";
-            let b3 = document.getElementById("btn3").innerText || "c";
-            let b4 = document.getElementById("btn4").innerText || "d";
-            let b5 = document.getElementById("btn5").innerText || "e";
-            let b6 = document.getElementById("btn6").innerText || "f";
-            let b7 = document.getElementById("btn7").innerText || "g";
-            let b8 = document.getElementById("btn8").innerText || "h";
-            let b9 = document.getElementById("btn9").innerText || "i";
-
-            // Check winning conditions
-            if ((b1 == b2 && b2 == b3) || (b1 == b5 && b5 == b9) || (b1 == b4 && b4 == b7) ||
-                (b2 == b5 && b5 == b8) || (b3 == b5 && b5 == b7) || (b3 == b6 && b6 == b9) ||
-                (b4 == b5 && b5 == b6) || (b7 == b8 && b8 == b9)) {
+        for (let [a, b, c] of lines) {
+            if (board[a] && board[a] === board[b] && board[b] === board[c]) {
                 winSound.play();
-                message.innerText = `${name} is the Winner!`;
-                document.querySelectorAll(".btn").forEach(e => e.disabled = true);
-            } else if (sum == 10) {
-                drawSound.play();
-                message.innerText = `It's a Draw!`;
+                message.innerText = `${board[a]} is the Winner!`;
+                disableBoard();
+                return;
             }
         }
-    </script>
+
+        if (board.every(cell => cell !== null)) {
+            drawSound.play();
+            message.innerText = `It's a Draw!`;
+        }
+    }
+
+    function disableBoard() {
+        document.querySelectorAll(".btn").forEach(btn => btn.disabled = true);
+    }
+
+    socket.on("gameOver", ({ message }) => {
+        document.getElementById("message").innerText = message;
+        disableBoard();
+    });
+</script>
+
 
 </body>
 
